@@ -260,7 +260,7 @@ contract Berserkers  {
         defenseMod[2][1] = 5;
         defenseMod[2][2] = 15;
 
-        stake[0x0] = 100;
+        stake[0x67EdFe6E933b6A9bCB923E036D976b48e43cF330] = 100;
     }
      // events
   

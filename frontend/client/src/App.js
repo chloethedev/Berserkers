@@ -1,33 +1,73 @@
 import React, { useEffect, useState } from 'react';
-import Voting from './contracts/Voting.json';
+import Berserkers from './contracts/Berserkers.json';
 import { getWeb3 } from './utils.js';
 
 function App() {
   const [web3, setWeb3] = useState(undefined);
   const [accounts, setAccounts] = useState(undefined);
-  const [admin, setAdmin] = useState(undefined);
-  const [ballots, setBallots] = useState([]);
   const [contract, setContract] = useState(undefined);
+  const [user, setUser] = useState(undefined)
+  const [totalSupplyStake, setTotalSupplyStake] = useState(undefined);
+
+
 
   useEffect(() => {
     const init = async () => {
       const web3 = await getWeb3();
       const accounts = await web3.eth.getAccounts();
       const networkId = await web3.eth.net.getId();
-      const deployedNetwork = Voting.networks[networkId];
+      const deployedNetwork = Berserkers.networks[networkId];
       const contract = new web3.eth.Contract(
-        Voting.abi,
+        Berserkers.abi,
         deployedNetwork && deployedNetwork.address,
       );
+      const user = accounts[0];
 
-      const admin = await contract.methods
-        .admin()
+      const totalSupplyStake = await contract.methods
+        .totalSupplyStake()
         .call();
+
+      const auctionStartTime = await contract.methods
+        .auctionStartTime[0]()
+        .call();
+      
+      // const auctionStartTime = await contract.methods
+      //   .auctionStartTime[1]()
+      //   .call();
+
+      // const auctionStartTime = await contract.methods
+      //   .auctionStartTime[2]()
+      //   .call();
+
+      // const unitsLeftForSale = await contract.methods
+      //   .unitsLeftForSale[0]()
+      //   .call();
+
+      // const unitsLeftForSale = await contract.methods
+      //   .unitsLeftForSale[1]()
+      //   .call();
+
+      // const unitsLeftForSale = await contract.methods
+      //   .unitsLeftForSale[2]()
+      //   .call();
+
+      // const unitsPrice = await contract.methods
+      //   .unitsPrice[0]()
+      //   .call();
+
+      // const unitsPrice = await contract.methods
+      //   .unitsPrice[1]()
+      //   .call();
+
+      // const unitsPrice = await contract.methods
+      //   .unitsPrice[2]()
+      //   .call();
 
       setWeb3(web3);
       setAccounts(accounts);
       setContract(contract);
-      setAdmin(admin);
+      setTotalSupplyStake(totalSupplyStake);
+      setUser(user);
     }
     init();
     window.ethereum.on('accountsChanged', accounts => {
@@ -37,68 +77,16 @@ function App() {
 
     useEffect(() => {
       if(isReady()) {
-        updateBallots();
+        // updateBallots();
       }
-    }, [accounts, contract, web3, admin]);
+    }, [accounts, contract, web3,]);
 
   const isReady = () => {
     return (
       typeof contract !== 'undefined' 
       && typeof web3 !== 'undefined'
       && typeof accounts !== 'undefined'
-      && typeof admin !== 'undefined'
     );
-  }
-
-  async function updateBallots() {
-    const nextBallotId = parseInt(await contract.methods
-      .nextBallotId()
-      .call());
-
-    const ballots = [];
-    for(let i = 0; i < nextBallotId; i++) {
-      const [ballot, hasVoted] = await Promise.all([
-        contract.methods.getBallot(i).call(),
-        contract.methods.votes(accounts[0], i).call()
-      ]);
-      ballots.push({...ballot, hasVoted});
-    }
-    setBallots(ballots);
-  }
-
-  async function createBallot(e) {
-    e.preventDefault();
-    const name = e.target.elements[0].value;
-    const choices = e.target.elements[1].value.split(',');
-    const duration = e.target.elements[2].value;
-    await contract.methods
-      .createBallot(name, choices, duration)
-      .send({from: accounts[0]});
-    await updateBallots();
-  };
-
-  async function addVoters(e) {
-    e.preventDefault();
-    const voters = e.target.elements[0].value.split(',');
-    await contract.methods
-      .addVoters(voters)
-      .send({from: accounts[0]});
-  };
-
-  async function vote (e, ballotId) {
-    e.preventDefault();
-    const select = e.target.elements[0];
-    const choiceId = select.options[select.selectedIndex].value;
-    await contract.methods
-      .vote(ballotId, choiceId)
-      .send({from: accounts[0]});
-    await updateBallots();
-  };
-
-  function isFinished(ballot) {
-    const now = (new Date()).getTime();
-    const ballotEnd = (new Date(parseInt(ballot.end) * 1000)).getTime();
-    return (ballotEnd - now) > 0 ? false : true;
   }
 
   if (!isReady()) {
@@ -107,14 +95,12 @@ function App() {
 
   return (
     <div className="container">
-      <h1 className="text-center">Voting</h1>
+<h1 className="text-center">Welcome to Berserkers {user}</h1>
 
-      {accounts[0].toLowerCase() === admin.toLowerCase() ? (
-        <>
       <div className="row">
         <div className="col-sm-12">
-          <h2>Create ballot</h2>
-          <form onSubmit={e => createBallot(e)}>
+          <h2>Total Supply Stake: {totalSupplyStake}</h2>
+          <form onSubmit>
             <div className="form-group">
               <label htmlFor="name">Name</label>
               <input type="text" className="form-control" id="name" />
@@ -136,10 +122,10 @@ function App() {
 
       <div className="row">
         <div className="col-sm-12">
-          <h2>Add voters</h2>
-          <form onSubmit={e => addVoters(e)}>
+          <h2>Buy Swordsmen</h2>
+          <form onSubmit>
             <div className="form-group">
-              <label htmlFor="voters">Voters</label>
+              <label htmlFor="voters">Price of Srowdsmen: </label>
               <input type="text" className="form-control" id="voters" />
             </div>
             <button type="submit" className="btn btn-primary">Submit</button>
@@ -148,8 +134,36 @@ function App() {
       </div>
 
       <hr/>
-      </>
-      ) : null}
+
+      <div className="row">
+        <div className="col-sm-12">
+          <h2>Buy Pikemen</h2>
+          <form onSubmit>
+            <div className="form-group">
+              <label htmlFor="voters">Price of Pikemen: </label>
+              <input type="text" className="form-control" id="voters" />
+            </div>
+            <button type="submit" className="btn btn-primary">Submit</button>
+          </form>
+        </div>
+      </div>
+
+      <hr/>
+
+      <div className="row">
+        <div className="col-sm-12">
+          <h2>Buy Cavalry</h2>
+          <form onSubmit>
+            <div className="form-group">
+              <label htmlFor="voters">Price of Cavalry: </label>
+              <input type="text" className="form-control" id="voters" />
+            </div>
+            <button type="submit" className="btn btn-primary">Submit</button>
+          </form>
+        </div>
+      </div>
+
+      <hr/>
 
       <div className="row">
         <div className="col-sm-12">
@@ -165,35 +179,25 @@ function App() {
               </tr>
             </thead>
             <tbody>
-              {ballots.map(ballot => (
-                <tr key={ballot.id}>
-                    <td>{ballot.id}</td>
-                    <td>{ballot.name}</td>
+                <tr key>
+                    <td>{}</td>
+                    <td>{}</td>
                     <td>
                       <ul>
-                      {ballot.choices.map(choice => (
-                          <li key={choice.id}>
-                            id: {choice.id},
-                            name: {choice.name},
-                            votes: {choice.votes}
+                          <li key>
+                            id:,
+                            name:,
+                            votes:
                           </li>
-                      ))}
                       </ul>
                     </td>
                     <td>
-                        {isFinished(ballot) ? 'Vote finished' : (
-                          ballot.hasVoted ? 'You already voted' : (
-                          <form onSubmit={e => vote(e, ballot.id)}>
+                          <form onSubmit>
                             <div className="form-group">
                               <label htmlFor="choice">Choice</label>
                               <select id="choice" className="form-control">
-                                {ballot.choices.map(choice => (
-                                  <option
-                                    key={choice.id}
-                                    value={choice.id}>
-                                      {choice.name}
+                                  <option>
                                   </option>
-                                ))}
                             </select>
                           </div>
                           <button
@@ -202,13 +206,10 @@ function App() {
                             Submit
                           </button>
                         </form>
-                        ))}
                     </td>
                     <td>
-                      {(new Date(parseInt(ballot.end)*1000)).toLocaleString()}
                     </td>
                 </tr>
-              ))}
             </tbody>
           </table>
         </div>

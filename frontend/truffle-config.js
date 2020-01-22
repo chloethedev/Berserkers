@@ -1,8 +1,9 @@
 const path = require("path");
+const fs = require('fs');
 const HDWalletProvider = require("truffle-hdwallet-provider");
-var mnemonic = "special home leg another stable mushroom heavy ranch another resist matter promote"; // 12 word mnemonic
-
-
+const secrets = JSON.parse(
+  fs.readFileSync(".secrets").toString().trim()
+);
 
 module.exports = {
   // See <http://truffleframework.com/docs/advanced/configuration>
@@ -15,16 +16,17 @@ module.exports = {
   },
   networks: {
     ropsten: {
-      provider: function() {
-        return new HDWalletProvider(mnemonic, "https://ropsten.infura.io/v3/6d5167011b5f4b24a3f144f8e6d38498");
+      provider: () => {
+        return new HDWalletProvider(secrets.seed, `https://ropsten.infura.io/v3/${secrets.projectId}`);
       },
       network_id: '3',
     },
     test: {
-      provider: function() {
+      provider: () => {
         return new HDWalletProvider(mnemonic, "http://127.0.0.1:8545/");
       },
       network_id: '*',
     },
   }
 };
+
