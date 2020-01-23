@@ -22,7 +22,9 @@ function App() {
   const [unitsOwned2, setUnitsOwned2] = useState(undefined);
   const [playerVault, setPlayerVault] = useState(undefined);
   const [contractAddress, setContractAddress] = useState(undefined);
-  // const []
+  const [userStake, setUserStake] = useState(undefined);
+  const [unclaimedDividends, setUnclaimedDividends] = useState(undefined);
+  const [totalDividendPoints, setTotalDividendPoints] = useState(undefined);
 
 
   useEffect(() => {
@@ -36,6 +38,7 @@ function App() {
         deployedNetwork && deployedNetwork.address,
       );
       const user = accounts[0];
+      const contractAddress = deployedNetwork.address
 
       const totalSupplyStake = await contract.methods
         .totalSupplyStake()
@@ -93,7 +96,19 @@ function App() {
         .playerVault(accounts[0])
         .call(), 'ether');
 
-      const contractAddress = deployedNetwork.address
+      const userStake = await contract.methods
+        .stake(accounts[0])
+        .call();
+
+      const unclaimedDividends = web3.utils.fromWei(await contract.methods
+        .unclaimedDividends()
+        .call(), 'ether');
+
+      const totalDividendPoints = web3.utils.fromWei(await contract.methods
+        .totalDividendPoints()
+        .call(), 'ether')
+
+
 
       setWeb3(web3);
       setAccounts(accounts);
@@ -114,6 +129,9 @@ function App() {
       setUnitsOwned2(unitsOwned2);
       setPlayerVault(playerVault);
       setContractAddress(contractAddress);
+      setUserStake(userStake);
+      setUnclaimedDividends(unclaimedDividends);
+      setTotalDividendPoints(totalDividendPoints);
 
     }
     init();
@@ -135,6 +153,11 @@ function App() {
       && typeof accounts !== 'undefined'
     );
   }
+
+  // async function updateUser() {
+  //   await contract.methods
+  //     .
+  // }
 
   async function DutchAuctionBuy(e) {
     e.preventDefault();
@@ -176,6 +199,25 @@ function App() {
     }))
     }
 
+  async function Attack(e) {
+    e.preventDefault();
+    const spot = e.target.elements[0].value;
+    const unitType = e.target.elements[1].value;
+    await contract.methods
+      .Attack(spot, unitType)
+      .send(
+        {from: accounts[0]}
+      );
+    }
+  async function fetchdivs() {
+    await contract.methods
+      .fetchdivs(accounts[0])
+      .send(
+        {from: accounts[0]}
+      );
+  }
+
+
   if (!isReady()) {
     return <div>Loading...</div>;
   }
@@ -185,8 +227,30 @@ function App() {
       <h1 className="text-center">Welcome to Berserkers</h1>
       <p className="text-center">Contract Address: {contractAddress}</p>
       <h5 className="text-center">Your Address: {user}</h5>
+      <p className="text-center">Your current stake is {userStake} out of a possible {totalSupplyStake}</p>
+      <p>Total Unclaimed Dividends: {unclaimedDividends} </p>
+      <p> Dunno what this is {totalDividendPoints} </p>
+      <button onClick={e => fetchdivs(e)}>Fetch Divies!</button>
+      <hr/>
+
+      <div className="row">
+        <div className="col-sm-12">
+        <form onSubmit={e => Attack(e)}>
+            <div className="form-group">
+              <label htmlFor="name">Battlefield Spot # (0-99)</label>
+              <input type="text" className="form-control" id="name" />
+            </div>
+            <div className="form-group">
+              <label htmlFor="choices">Unit to attack with (0 - cav / 1 - sw / 2 - pike)</label>
+              <input type="text" className="form-control" id="choices" />
+            </div>
+            <button type="submit" className="btn btn-primary">ATTACK!</button>
+          </form>
+        </div>
+      </div>
 
       <hr/>
+
       <div className="row">
         <div className="col-sm-12">
         <form onSubmit={e => fillPlayerVault(e)}>
