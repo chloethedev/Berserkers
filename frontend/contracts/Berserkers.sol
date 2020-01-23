@@ -107,7 +107,7 @@ contract Berserkers  {
             }
         accounts[account].lastDividendPoints = totalDividendPoints;
     _;
-    }   
+    }
     function () external payable{playerVault[msg.sender] = playerVault[msg.sender].add(msg.value);}
     function fetchdivs(address account) public updateAccount(account){}
     function vaultToWallet() public updateAccount(msg.sender)

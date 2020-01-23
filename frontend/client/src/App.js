@@ -20,6 +20,9 @@ function App() {
   const [unitsOwned0, setUnitsOwned0] = useState(undefined);
   const [unitsOwned1, setUnitsOwned1] = useState(undefined);
   const [unitsOwned2, setUnitsOwned2] = useState(undefined);
+  const [playerVault, setPlayerVault] = useState(undefined);
+  const [contractAddress, setContractAddress] = useState(undefined);
+  // const []
 
 
   useEffect(() => {
@@ -86,6 +89,12 @@ function App() {
         .unitsOwned(accounts[0], 2)
         .call();
 
+      const playerVault = web3.utils.fromWei(await contract.methods
+        .playerVault(accounts[0])
+        .call(), 'ether');
+
+      const contractAddress = deployedNetwork.address
+
       setWeb3(web3);
       setAccounts(accounts);
       setContract(contract);
@@ -103,6 +112,8 @@ function App() {
       setUnitsOwned0(unitsOwned0);
       setUnitsOwned1(unitsOwned1);
       setUnitsOwned2(unitsOwned2);
+      setPlayerVault(playerVault);
+      setContractAddress(contractAddress);
 
     }
     init();
@@ -152,6 +163,19 @@ function App() {
       );
   }
 
+  async function fillPlayerVault(e) {
+    e.preventDefault();
+    const deposit = e.target.elements[0].value;
+    await (web3.eth.sendTransaction({
+      from: accounts[0],
+      to: contractAddress,
+      value: deposit
+    })
+    .then(function(reciept) {
+      return reciept;
+    }))
+    }
+
   if (!isReady()) {
     return <div>Loading...</div>;
   }
@@ -159,7 +183,24 @@ function App() {
   return (
     <div className="container">
       <h1 className="text-center">Welcome to Berserkers</h1>
-      <h5 className="text-center">{user}</h5>
+      <p className="text-center">Contract Address: {contractAddress}</p>
+      <h5 className="text-center">Your Address: {user}</h5>
+
+      <hr/>
+      <div className="row">
+        <div className="col-sm-12">
+        <form onSubmit={e => fillPlayerVault(e)}>
+          <div className='form-group'>
+            <label htmlFor="deposit">Current Funds in Player Vault {playerVault} ETH </label>
+            <br/>
+            <input/>
+            <button>Send Funds to Player Vault</button>
+          </div>
+        </form>
+        </div>
+      </div>
+
+      
 
     <hr/>
       <div className="row">
