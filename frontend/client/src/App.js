@@ -217,58 +217,76 @@ function App() {
       );
   }
 
+  async function vaultToWallet() {
+    await contract.methods
+      .vaultToWallet()
+      .send(
+        {from: accounts[0]}
+      );
+  }
+
 
   if (!isReady()) {
     return <div>Loading...</div>;
   }
 
   return (
-    <div className="container">
-      <h1 className="text-center">Welcome to Berserkers</h1>
-      <p className="text-center">Contract Address: {contractAddress}</p>
-      <h5 className="text-center">Your Address: {user}</h5>
-      <p className="text-center">Your current stake is {userStake} out of a possible {totalSupplyStake}</p>
-      <p>Total Unclaimed Dividends: {unclaimedDividends} </p>
-      <p> Dunno what this is {totalDividendPoints} </p>
-      <button onClick={e => fetchdivs(e)}>Fetch Divies!</button>
+    <div className="container m-auto pb-5">
+
+        <h1 className="text-center">Welcome to Berserkers</h1>
+        <p className="text-center">Contract Address: {contractAddress}</p>
+        <h5 className="text-center">Your Address: {user}</h5>
+        <p className="text-center">Your have conquered {userStake} out of a possible {totalSupplyStake} battlefields.</p>
+
       <hr/>
 
       <div className="row">
-        <div className="col-sm-12">
-        <form onSubmit={e => Attack(e)}>
-            <div className="form-group">
-              <label htmlFor="name">Battlefield Spot # (0-99)</label>
-              <input type="text" className="form-control" id="name" />
+        <div className="col-4 text-center">Total Unclaimed Dividends: {unclaimedDividends} 
+        <br></br>
+        <button type="submit" className="btn btn-primary text-center" onClick={e => fetchdivs(e)}>Fetch Divies!</button>
+        </div>
+        {/* <div className="col-4"> Dunno what this is {totalDividendPoints} </div> */}
+        <div className="col-4">
+          <form onSubmit={e => fillPlayerVault(e)}>
+            <div className='form-group text-center'>
+              <label htmlFor="deposit">Input how much ETH you would like to deposit to your Vault. </label>
+              <input/>
+              <button>Send Funds to Player Vault</button>
             </div>
-            <div className="form-group">
-              <label htmlFor="choices">Unit to attack with (0 - cav / 1 - sw / 2 - pike)</label>
-              <input type="text" className="form-control" id="choices" />
-            </div>
-            <button type="submit" className="btn btn-primary">ATTACK!</button>
           </form>
         </div>
+
+        <div className="col-4 text-center">
+          Current Funds in Player Vault {playerVault} ETH 
+          <button type="submit" className="btn btn-primary text-center" onClick={e => vaultToWallet(e)}>WIthdraw From Vault</button>
+        </div>
+
+      </div>
+
+   
+
+      <hr/>
+
+      <div className="row">
+        <div className="col-12">
+          <form onSubmit={e => Attack(e)}>
+              <div className="form-group col-4">
+                <label htmlFor="name">Battlefield Spot # (0-99)</label>
+                <input type="text" className="form-control" id="name" />
+              </div>
+              <div className="form-group col-4">
+                <label htmlFor="choices">Unit to attack with (0 - cav / 1 - sw / 2 - pike)</label>
+                <input type="text" className="form-control" id="choices" />
+              </div>
+              <button type="submit" className="btn btn-primary col-4">ATTACK!</button>
+            </form>
+        </div>
       </div>
 
       <hr/>
 
       <div className="row">
-        <div className="col-sm-12">
-        <form onSubmit={e => fillPlayerVault(e)}>
-          <div className='form-group'>
-            <label htmlFor="deposit">Current Funds in Player Vault {playerVault} ETH </label>
-            <br/>
-            <input/>
-            <button>Send Funds to Player Vault</button>
-          </div>
-        </form>
-        </div>
-      </div>
-
-      
-
-    <hr/>
-      <div className="row">
-        <div className="col-sm-12">
+        <div className="col-4">
           <h2>Cavalry</h2>
           <h4>Auction Start Time for Horse Riders: {(new Date(parseInt(auctionStartTime0)*1000)).toLocaleString()}</h4>
             <form>
@@ -280,31 +298,25 @@ function App() {
               </div>
           </form>
         </div>
-      </div>
-
-      <hr/>
-      
-      <div className="row">
-        <div className="col-sm-12">
+    
+        <div className="col-4">
           <h2>Swordsmen</h2>
-          <h3>Auction Start Time for Sword Swingers: {(new Date(parseInt(auctionStartTime1)*1000)).toLocaleString()}</h3>
-          <form>
-            <div className="form-group">
-              <label htmlFor="swordsmen">Price: {unitsPrice1} ETH </label>
-              <p>Units left for sale: {unitsLeftForSale1}</p>
-              <p>You have {unitsOwned1} Swordsmen </p>
-            </div>
-            <button onClick={e => DutchAuctionBuy1(e)} type="submit" className="btn btn-primary">Purchace 1000 Swordswingers</button>
-          </form>
+              <h4>Auction Start Time for Sword Swingers: {(new Date(parseInt(auctionStartTime1)*1000)).toLocaleString()}</h4>
+              <form>
+                <div className="form-group">
+                  <label htmlFor="swordsmen">Price: {unitsPrice1} ETH </label>
+                  <p>Units left for sale: {unitsLeftForSale1}</p>
+                  <p>You have {unitsOwned1} Swordsmen </p>
+                </div>
+                <button onClick={e => DutchAuctionBuy1(e)} type="submit" className="btn btn-primary">Purchace 1000 Swordswingers</button>
+              </form>
         </div>
-      </div>
 
-      <hr/>
+        <hr/>
 
-      <div className="row">
-        <div className="col-sm-12">
+        <div className="col-4">
           <h2>Pikemen</h2>
-          <h3>Auction Start Time for Pike Pokers: {(new Date(parseInt(auctionStartTime2)*1000)).toLocaleString()}</h3>
+          <h4>Auction Start Time for Pike Pokers: {(new Date(parseInt(auctionStartTime2)*1000)).toLocaleString()}</h4>
           <form>
             <div className="form-group">
               <label htmlFor="pikemen">Price: {unitsPrice2} ETH </label>
@@ -315,7 +327,6 @@ function App() {
           </form>
         </div>
       </div>
-    <hr/>
    </div>
   );
 }
